@@ -4,6 +4,8 @@
 
 using namespace std;
 
+int cacheInstuctionLocation = 0, cacheDataLocation = 0, cacheCombinedLocation = 0;
+
 int convertTypeToNumber(string line) {
 	char dOrIString[2];
 	int dOrI;
@@ -29,7 +31,7 @@ void dataToInstuctionCacheLRU(int data) {
 }
 
 void dataToDataWriteCacheLRU(int data) {
-
+	
 	cacheDataLocation++;
 }
 
@@ -38,14 +40,19 @@ void dataToDataReadCacheLRU(int data) {
 	cacheDataLocation++;
 }
 
+void dataToCombinedCacheLRU(int data) {
+	cacheCombinedLocation++;
+}
+
 int instructionCache[16385], dataCache[16385], combiledCache[32769];
-int cacheInstuctionLocation = 0, cacheDataLocation = 0, cacheCombinedLocation = 0;
 int instructionCacheHitRate = 0, instructionCacheMissRate = 0, dataCacheHitRate = 0, dataCacheMissRate = 0, combinedCacheHitRate = 0, combiledCacheMissRate = 0;
 
 int main() {
-	int i, data, dOrI;
+
+	int data, dOrI;
+	char fileName[15] = "trace.din";
 	string line;
-	char fileName[15] = "trace.din", temp[100], dOrIString[2];
+
 	ifstream in(fileName);
 	if (!in) {
 		cout << "\nFile does not exist";
