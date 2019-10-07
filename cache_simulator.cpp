@@ -16,7 +16,7 @@ int convertTypeToNumber(string line) {
 int convertDataToNumber(string line) {
 	int i = 2, data;
 	char temp[100];
-	while (i != 8) {
+	while (i != 10) {
 		temp[i - 2] = line[i];
 		i++;
 	}
@@ -26,14 +26,14 @@ int convertDataToNumber(string line) {
 
 int main()
 {
-	int combinedCache[2][32768], instructionCache[2][16384], dataCache[2][16384];		// [0][index] -> tag, [1][index] -> LRU priority
+	int combinedCache[2][4096], instructionCache[2][4096], dataCache[2][4096];		// [0][index] -> tag, [1][index] -> LRU priority
 	char fileName[15] = "trace.din";
 	string line;
 	int i, k, flag = 0;
 	int data, dOrI, sOrC, blockSize, blockSizeSelect, associativitySelect, associativity;
 	int tagLength, indexLength, offsetLength, cacheSize, offsetTemp, indexTemp, tagTemp;
 	int dataTag, dataIndex, dataOffset;
-	int combinedFetches = 0, combinedHit = 0, instructionFetches = 0, dataFetches = 0, instructionHit = 0, dataHit = 0;
+	int combinedFetches = 0, combinedHit = 0, instructionFetches = 0, dataFetches = 0, instructionHit = 0, dataHit = 0, combinedMiss = 0;
 //***************************************************************************************
 // Menu to input data																	*
 //***************************************************************************************
@@ -83,14 +83,19 @@ int main()
 
 	cout << "\nTag = " << tagLength << "\tIndex = " << indexLength << "\tOffset = " << offsetLength << endl;
 
-	offsetTemp = blockSize - 1;
-	indexTemp = ((cacheSize / (blockSize * associativity)) - 1) << offsetLength;
-	tagTemp = ((1 << tagLength) - 1) << (indexLength + offsetLength);
-
-	for (i = 0; i < 32768; i++) {
+	offsetTemp = (1 << offsetLength) - 1;
+	indexTemp = (1 << indexLength) - 1;
+	tagTemp = (1 << tagLength) - 1;
+	//cout<<offsetTemp<<" " <<indexTemp<<"  "<<tagTemp<<endl;
+	/*
+		offsetTemp = blockSize - 1;
+		indexTemp = ((cacheSize / (blockSize * associativity)) - 1) << offsetLength;
+		tagTemp = ((1 << tagLength) - 1) << (indexLength + offsetLength);
+	*/
+	for (i = 0; i < 4096; i++) {
 		combinedCache[0][i] = 0;
 		combinedCache[1][i] = 3;
-		if (i < 16384) {
+		if (i < 4096) {
 			instructionCache[0][i] = 0;
 			instructionCache[1][i] = 3;
 			dataCache[0][i] = 0;
@@ -99,32 +104,82 @@ int main()
 	}
 
 	if (sOrC == 2) {
+		/*		(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+				(getline(in, line));
+				dOrI = convertTypeToNumber(line);
+					data = convertDataToNumber(line);
+				cout<<data<<endl;
+		*/
 		while (getline(in, line)) {
 			dOrI = convertTypeToNumber(line);
 			data = convertDataToNumber(line);
 			//cout << data << endl;
+			/*
 			dataTag = ((data & tagTemp) >> (indexLength + offsetLength));
 			dataIndex = ((data & indexTemp) >> offsetLength);
 			dataOffset = (data & offsetTemp);
+			*/
+			dataOffset = data & offsetTemp;
+			dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
+			dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
+
+			//cout<<data<<endl;
 			//cout << "\ndataTag = " << dataTag << "\tdataIndex = " << dataIndex << "\tdataOffset = " << dataOffset << endl;
 			combinedFetches++;
 			if (associativity == 1) {
+
 				if (combinedCache[0][dataIndex] == dataTag) {
 					combinedHit++;
 				}
 				else {
 					combinedCache[0][dataIndex] = dataTag;
+					combinedMiss++;
 				}
 			}
 			if (associativity == 4) {
 				flag = 0;
 				for (k = 0; k < associativity; k++) {
-					if (combinedCache[0][dataIndex + (8192 * k)] == dataTag) {
-						combinedCache[1][dataIndex + (8192 * k)] = 0;
+					if (combinedCache[0][dataIndex + (1024 * k)] == dataTag) {
+						combinedCache[1][dataIndex + (1024 * k)] = 0;
 						for (i = 0; i < associativity; i++) {
 							if (i != k) {
-								if (combinedCache[1][dataIndex + (8192 * i)] != (associativity - 1))
-									combinedCache[1][dataIndex + (8192 * i)]++;
+								if (combinedCache[1][dataIndex + (1024 * i)] != (associativity - 1))
+									combinedCache[1][dataIndex + (1024 * i)]++;
 							}
 						}
 						combinedHit++;
@@ -134,15 +189,15 @@ int main()
 				}
 				if (flag != 1) {
 					for (i = 0; i < associativity; i++) {
-						if (combinedCache[1][dataIndex + (8192 * i)] == (associativity - 1)) {
-							combinedCache[0][dataIndex + (8192 * i)] = dataTag;
-							combinedCache[1][dataIndex + (8192 * i)] = 0;
+						if (combinedCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
+							combinedCache[0][dataIndex + (1024 * i)] = dataTag;
+							combinedCache[1][dataIndex + (1024 * i)] = 0;
 
 							for (k = 0; k < associativity; k++) {
 								//cout << "HI" << endl;
 								if (k != i) {
-									if (combinedCache[1][dataIndex + (8192 * k)] != (associativity - 1)) {
-										combinedCache[1][dataIndex + (8192 * k)]++;
+									if (combinedCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
+										combinedCache[1][dataIndex + (1024 * k)]++;
 									}
 								}
 							}
@@ -152,7 +207,7 @@ int main()
 				}
 			}
 		}
-		cout << "\nfetches = " << combinedFetches << "\thit = " << combinedHit << "\tmisses = " << (combinedFetches - combinedHit) << endl;
+		cout << "\nfetches = " << combinedFetches << "\thit = " << combinedHit << "\tmisses = " << (combinedFetches - combinedHit) << "\tMiss Counter = " << combinedMiss << endl;
 	}
 
 
@@ -161,9 +216,15 @@ int main()
 			dOrI = convertTypeToNumber(line);
 			data = convertDataToNumber(line);
 			//cout << data << endl;
+			/*
 			dataTag = ((data & tagTemp) >> (indexLength + offsetLength));
 			dataIndex = ((data & indexTemp) >> offsetLength);
 			dataOffset = (data & offsetTemp);
+			*/
+			dataOffset = data & offsetTemp;
+			dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
+			dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
+
 			//cout<<"\ndataTag = "<<dataTag<<"\tdataIndex = "<<dataIndex<<"\tdataOffset = "<<dataOffset<<endl;
 			if (associativity == 1) {
 				if (dOrI == 2) {
@@ -199,12 +260,12 @@ int main()
 					instructionFetches++;
 					flag = 0;
 					for (k = 0; k < associativity; k++) {
-						if (instructionCache[0][dataIndex + (8192 * k)] == dataTag) {
-							instructionCache[1][dataIndex + (8192 * k)] = 0;
+						if (instructionCache[0][dataIndex + (1024 * k)] == dataTag) {
+							instructionCache[1][dataIndex + (1024 * k)] = 0;
 							for (i = 0; i < associativity; i++) {
 								if (i != k) {
-									if (instructionCache[1][dataIndex + (8192 * i)] != (associativity - 1))
-										instructionCache[1][dataIndex + (8192 * i)]++;
+									if (instructionCache[1][dataIndex + (1024 * i)] != (associativity - 1))
+										instructionCache[1][dataIndex + (1024 * i)]++;
 								}
 							}
 							instructionHit++;
@@ -214,15 +275,15 @@ int main()
 					}
 					if (flag != 1) {
 						for (i = 0; i < associativity; i++) {
-							if (instructionCache[1][dataIndex + (8192 * i)] == (associativity - 1)) {
-								instructionCache[0][dataIndex + (8192 * i)] = dataTag;
-								instructionCache[1][dataIndex + (8192 * i)] = 0;
+							if (instructionCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
+								instructionCache[0][dataIndex + (1024 * i)] = dataTag;
+								instructionCache[1][dataIndex + (1024 * i)] = 0;
 
 								for (k = 0; k < associativity; k++) {
 									//cout << "HI" << endl;
 									if (k != i) {
-										if (instructionCache[1][dataIndex + (8192 * k)] != (associativity - 1)) {
-											instructionCache[1][dataIndex + (8192 * k)]++;
+										if (instructionCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
+											instructionCache[1][dataIndex + (1024 * k)]++;
 										}
 									}
 								}
@@ -235,12 +296,12 @@ int main()
 					dataFetches++;
 					flag = 0;
 					for (k = 0; k < associativity; k++) {
-						if (dataCache[0][dataIndex + (8192 * k)] == dataTag) {
-							dataCache[1][dataIndex + (8192 * k)] = 0;
+						if (dataCache[0][dataIndex + (1024 * k)] == dataTag) {
+							dataCache[1][dataIndex + (1024 * k)] = 0;
 							for (i = 0; i < associativity; i++) {
 								if (i != k) {
-									if (dataCache[1][dataIndex + (8192 * i)] != (associativity - 1))
-										dataCache[1][dataIndex + (8192 * i)]++;
+									if (dataCache[1][dataIndex + (1024 * i)] != (associativity - 1))
+										dataCache[1][dataIndex + (1024 * i)]++;
 								}
 							}
 							dataHit++;
@@ -250,15 +311,15 @@ int main()
 					}
 					if (flag != 1) {
 						for (i = 0; i < associativity; i++) {
-							if (dataCache[1][dataIndex + (8192 * i)] == (associativity - 1)) {
-								dataCache[0][dataIndex + (8192 * i)] = dataTag;
-								dataCache[1][dataIndex + (8192 * i)] = 0;
+							if (dataCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
+								dataCache[0][dataIndex + (1024 * i)] = dataTag;
+								dataCache[1][dataIndex + (1024 * i)] = 0;
 
 								for (k = 0; k < associativity; k++) {
 									//cout << "HI" << endl;
 									if (k != i) {
-										if (dataCache[1][dataIndex + (8192 * k)] != (associativity - 1)) {
-											dataCache[1][dataIndex + (8192 * k)]++;
+										if (dataCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
+											dataCache[1][dataIndex + (1024 * k)]++;
 										}
 									}
 								}

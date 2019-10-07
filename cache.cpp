@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -88,21 +89,10 @@ int main() {
 		while (getline(in, line)) {
 			dOrI = convertTypeToNumber(line);
 			data = convertDataToNumber(line);
-			if (dOrI == 0) {					// Instuction Fetch
-				dataToInstuctionCacheLRU(data);
-			}
-			else if (dOrI == 1) { 				// Data write
-				dataToDataWriteCacheLRU(data);
-			}
-			else if (dOrI == 0) {				// Data read
-				dataToDataReadCacheLRU(data);
-			}
+			cout<<data<<endl;
 		}
 	}
 //	cout << "Tag = " << tag << "\t\t" << "Index = " << index << "Offset = " << offset;
-	cout << "\nInstuction Hit Rate = " << instructionCacheHitRate << "\t\t" << "Instruction Miss Rate = " << instructionCacheMissRate << endl;
-	cout << "Data Hit Rate = " << dataCacheHitRate << "\t\t" << "Data Miss Rate = " << dataCacheMissRate << endl;
-	cout << "Combined Hit Rate = " << combinedCacheHitRate << "\t\t" << "Combined Miss Rate = " << combiledCacheMissRate << endl;
 	in.close();
 	return 0;
 }
