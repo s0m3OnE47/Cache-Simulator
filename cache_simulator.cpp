@@ -100,199 +100,288 @@ int main()
 	}
 	*/
 
+	/*
+		count = 1;
+		while (count <= 12) {
+			flag = 0;
+			combinedFetches = 0;
+			combinedHit = 0;
+			instructionFetches = 0;
+			dataFetches = 0;
+			instructionHit = 0;
+			dataHit = 0;
+			combinedMiss = 0;
 
-
-	count = 1;
-	while (count <= 12) {
-		flag = 0;
-		combinedFetches = 0;
-		combinedHit = 0;
-		instructionFetches = 0;
-		dataFetches = 0;
-		instructionHit = 0;
-		dataHit = 0;
-		combinedMiss = 0;
-
-		switch (count) {
-		case 1:
-			sOrC = 1;
-			cacheSize = 16384;
-			blockSizeSelect = 1;
-			blockSize = 8;
-			associativitySelect = 1;
-			associativity = 1;
-			break;
-		case 2:
-			sOrC = 1;
-			cacheSize = 16384;
-			blockSizeSelect = 1;
-			blockSize = 8;
-			associativitySelect = 2;
-			associativity = 4;
-			break;
-		case 3:
-			sOrC = 1;
-			cacheSize = 16384;
-			blockSizeSelect = 2;
-			blockSize = 32;
-			associativitySelect = 1;
-			associativity = 1;
-			break;
-		case 4:
-			sOrC = 1;
-			cacheSize = 16384;
-			blockSizeSelect = 2;
-			blockSize = 32;
-			associativitySelect = 2;
-			associativity = 4;
-			break;
-		case 5:
-			sOrC = 1;
-			cacheSize = 16384;
-			blockSizeSelect = 3;
-			blockSize = 128;
-			associativitySelect = 1;
-			associativity = 1;
-			break;
-		case 6:
-			sOrC = 1;
-			cacheSize = 16384;
-			blockSizeSelect = 3;
-			blockSize = 128;
-			associativitySelect = 2;
-			associativity = 4;
-			break;
-		case 7:
-			sOrC = 2;
-			cacheSize = 32768;
-			blockSizeSelect = 1;
-			blockSize = 8;
-			associativitySelect = 1;
-			associativity = 1;
-			break;
-		case 8:
-			sOrC = 2;
-			cacheSize = 32768;
-			blockSizeSelect = 1;
-			blockSize = 8;
-			associativitySelect = 2;
-			associativity = 4;
-			break;
-		case 9:
-			sOrC = 2;
-			cacheSize = 32768;
-			blockSizeSelect = 2;
-			blockSize = 32;
-			associativitySelect = 1;
-			associativity = 1;
-			break;
-		case 10:
-			sOrC = 2;
-			cacheSize = 32768;
-			blockSizeSelect = 2;
-			blockSize = 32;
-			associativitySelect = 2;
-			associativity = 4;
-			break;
-		case 11:
-			sOrC = 2;
-			cacheSize = 32768;
-			blockSizeSelect = 3;
-			blockSize = 128;
-			associativitySelect = 1;
-			associativity = 1;
-			break;
-		case 12:
-			sOrC = 2;
-			cacheSize = 32768;
-			blockSizeSelect = 3;
-			blockSize = 128;
-			associativitySelect = 2;
-			associativity = 4;
-			break;
-		default:
-			break;
-		}
-
-		ifstream in(fileName);
-		if (!in) {
-			cout << "\nFile does not exist";
-		}
-
-		cout << "###########################################################################################" << endl;
-		cout << "Case " << count << endl;
-		cout << "-------------------------------------------------------------------------------------------" << endl;
-		cout << "Cache Size = " << cacheSize << " B" << "\tBlock Size = " << blockSize << " B" << "\t\tAssociativity = " << associativity << " way" << endl;
-		cout << "___________________________________________________________________________________________" << endl;
-		offsetLength = (int)(log2(blockSize));
-		indexLength = (int)(log2(cacheSize / (blockSize * associativity)));
-		tagLength = (int)(32 - indexLength - offsetLength);
-
-		cout << "\nTag uses " << tagLength << " bits," << "\tIndex uses " << indexLength << " bits," << "\tOffset uses " << offsetLength << " bits" << endl;
-
-		offsetTemp = (1 << offsetLength) - 1;
-		indexTemp = (1 << indexLength) - 1;
-		tagTemp = (1 << tagLength) - 1;
-
-		// Reset LRU = 3, data = 0;
-		for (i = 0; i < 4096; i++) {
-			combinedCache[0][i] = 0;
-			combinedCache[1][i] = 3;
-			if (i < 4096) {
-				instructionCache[0][i] = 0;
-				instructionCache[1][i] = 3;
-				dataCache[0][i] = 0;
-				dataCache[1][i] = 3;
+			switch (count) {
+			case 1:
+				sOrC = 1;
+				cacheSize = 16384;
+				blockSizeSelect = 1;
+				blockSize = 8;
+				associativitySelect = 1;
+				associativity = 1;
+				break;
+			case 2:
+				sOrC = 1;
+				cacheSize = 16384;
+				blockSizeSelect = 1;
+				blockSize = 8;
+				associativitySelect = 2;
+				associativity = 4;
+				break;
+			case 3:
+				sOrC = 1;
+				cacheSize = 16384;
+				blockSizeSelect = 2;
+				blockSize = 32;
+				associativitySelect = 1;
+				associativity = 1;
+				break;
+			case 4:
+				sOrC = 1;
+				cacheSize = 16384;
+				blockSizeSelect = 2;
+				blockSize = 32;
+				associativitySelect = 2;
+				associativity = 4;
+				break;
+			case 5:
+				sOrC = 1;
+				cacheSize = 16384;
+				blockSizeSelect = 3;
+				blockSize = 128;
+				associativitySelect = 1;
+				associativity = 1;
+				break;
+			case 6:
+				sOrC = 1;
+				cacheSize = 16384;
+				blockSizeSelect = 3;
+				blockSize = 128;
+				associativitySelect = 2;
+				associativity = 4;
+				break;
+			case 7:
+				sOrC = 2;
+				cacheSize = 32768;
+				blockSizeSelect = 1;
+				blockSize = 8;
+				associativitySelect = 1;
+				associativity = 1;
+				break;
+			case 8:
+				sOrC = 2;
+				cacheSize = 32768;
+				blockSizeSelect = 1;
+				blockSize = 8;
+				associativitySelect = 2;
+				associativity = 4;
+				break;
+			case 9:
+				sOrC = 2;
+				cacheSize = 32768;
+				blockSizeSelect = 2;
+				blockSize = 32;
+				associativitySelect = 1;
+				associativity = 1;
+				break;
+			case 10:
+				sOrC = 2;
+				cacheSize = 32768;
+				blockSizeSelect = 2;
+				blockSize = 32;
+				associativitySelect = 2;
+				associativity = 4;
+				break;
+			case 11:
+				sOrC = 2;
+				cacheSize = 32768;
+				blockSizeSelect = 3;
+				blockSize = 128;
+				associativitySelect = 1;
+				associativity = 1;
+				break;
+			case 12:
+				sOrC = 2;
+				cacheSize = 32768;
+				blockSizeSelect = 3;
+				blockSize = 128;
+				associativitySelect = 2;
+				associativity = 4;
+				break;
+			default:
+				break;
 			}
+	*/
+
+	sOrC = 2;
+	cacheSize = 16384;
+	blockSizeSelect = 2;
+	blockSize = 32;
+	associativitySelect = 2;
+	associativity = 4;
+
+
+	ifstream in(fileName);
+	if (!in) {
+		cout << "\nFile does not exist";
+	}
+
+	cout << "###########################################################################################" << endl;
+	cout << "Case " << count << endl;
+	cout << "-------------------------------------------------------------------------------------------" << endl;
+	cout << "Cache Size = " << cacheSize << " B" << "\tBlock Size = " << blockSize << " B" << "\t\tAssociativity = " << associativity << " way" << endl;
+	cout << "___________________________________________________________________________________________" << endl;
+	offsetLength = (int)(log2(blockSize));
+	indexLength = (int)(log2(cacheSize / (blockSize * associativity)));
+	tagLength = (int)(32 - indexLength - offsetLength);
+
+	cout << "\nTag uses " << tagLength << " bits," << "\tIndex uses " << indexLength << " bits," << "\tOffset uses " << offsetLength << " bits" << endl;
+
+	offsetTemp = (1 << offsetLength) - 1;
+	indexTemp = (1 << indexLength) - 1;
+	tagTemp = (1 << tagLength) - 1;
+
+	// Reset LRU = 3, data = 0;
+	for (i = 0; i < 4096; i++) {
+		combinedCache[0][i] = 0;
+		combinedCache[1][i] = 3;
+		if (i < 4096) {
+			instructionCache[0][i] = 0;
+			instructionCache[1][i] = 3;
+			dataCache[0][i] = 0;
+			dataCache[1][i] = 3;
 		}
+	}
 
-		// If Combined Cache is selected
-		if (sOrC == 2) {
-			while (getline(in, line)) {
-				dOrI = convertTypeToNumber(line);
-				data = convertDataToNumber(line);
+	// If Combined Cache is selected
+	if (sOrC == 2) {
+		while (getline(in, line)) {
+			dOrI = convertTypeToNumber(line);
+			data = convertDataToNumber(line);
 
-				dataOffset = data & offsetTemp;
-				dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
-				dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
+			dataOffset = data & offsetTemp;
+			dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
+			dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
 
-				//cout << "\ndataTag = " << dataTag << "\tdataIndex = " << dataIndex << "\tdataOffset = " << dataOffset << endl;
-				combinedFetches++;
+			//cout << "\ndataTag = " << dataTag << "\tdataIndex = " << dataIndex << "\tdataOffset = " << dataOffset << endl;
+			combinedFetches++;
 
-				if (associativity == 1) {
-					if (combinedCache[0][dataIndex] == dataTag) {
+			if (associativity == 1) {
+				if (combinedCache[0][dataIndex] == dataTag) {
+					combinedHit++;
+				}
+				else {
+					combinedCache[0][dataIndex] = dataTag;
+				}
+			}
+
+			if (associativity == 4) {
+				flag = 0;
+				for (k = 0; k < associativity; k++) {
+					if (combinedCache[0][dataIndex + (1024 * k)] == dataTag) {
+						combinedCache[1][dataIndex + (1024 * k)] = 0;
+						for (i = 0; i < associativity; i++) {
+							if (i != k) {
+								if (combinedCache[1][dataIndex + (1024 * i)] != (associativity - 1))
+									combinedCache[1][dataIndex + (1024 * i)]++;
+							}
+						}
 						combinedHit++;
-					}
-					else {
-						combinedCache[0][dataIndex] = dataTag;
+						flag = 1;
+						break;
 					}
 				}
-
-				if (associativity == 4) {
-					flag = 0;
-					for (k = 0; k < associativity; k++) {
-						if (combinedCache[0][dataIndex + (1024 * k)] == dataTag) {
-							combinedCache[1][dataIndex + (1024 * k)] = 0;
-							for (i = 0; i < associativity; i++) {
-								if (i != k) {
-									if (combinedCache[1][dataIndex + (1024 * i)] != (associativity - 1))
-										combinedCache[1][dataIndex + (1024 * i)]++;
+				if (flag != 1) {
+					for (i = 0; i < associativity; i++) {
+						if (combinedCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
+							combinedCache[0][dataIndex + (1024 * i)] = dataTag;
+							combinedCache[1][dataIndex + (1024 * i)] = 0;
+							for (k = 0; k < associativity; k++) {
+								if (k != i) {
+									if (combinedCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
+										combinedCache[1][dataIndex + (1024 * k)]++;
+									}
 								}
 							}
-							combinedHit++;
+							break;
+						}
+					}
+				}
+			}
+		}
+		cout << "\nCombined Fetches = " << combinedFetches << "\tCombined Hits = " << combinedHit << "\t\tCombined Misses = " << (combinedFetches - combinedHit) << endl;
+		cout << "\nCombined Hit Rate = " << (((float)combinedHit) * 100) / ((float)combinedFetches) << "%" << "\tCombined Miss Rate = " << 100.0 - (((float)combinedHit) * 100) / ((float)combinedFetches) << "%" << endl;
+	}
+
+// If Split Cache is selected
+	if (sOrC == 1) {
+		while (getline(in, line)) {
+			dOrI = convertTypeToNumber(line);
+			data = convertDataToNumber(line);
+
+			dataOffset = data & offsetTemp;
+			dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
+			dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
+
+			//cout<<"\ndataTag = "<<dataTag<<"\tdataIndex = "<<dataIndex<<"\tdataOffset = "<<dataOffset<<endl;
+			if (associativity == 1) {
+				if (dOrI == 2) {
+					instructionFetches++;
+					if (instructionCache[0][dataIndex] == dataTag) {
+						instructionHit++;
+					}
+					else {
+						instructionCache[0][dataIndex] = dataTag;
+					}
+				}
+				if (dOrI == 1) {
+					dataFetches++;
+					if (dataCache[0][dataIndex] == dataTag) {
+						dataHit++;
+					}
+					else {
+						dataCache[0][dataIndex] = dataTag;
+					}
+				}
+				if (dOrI == 0) {
+					dataFetches++;
+					if (dataCache[0][dataIndex] == dataTag) {
+						dataHit++;
+					}
+					else {
+						dataCache[0][dataIndex] = dataTag;
+					}
+				}
+			}
+
+			if (associativity == 4) {
+				if (dOrI == 2) {
+					instructionFetches++;
+					flag = 0;
+					for (k = 0; k < associativity; k++) {
+						if (instructionCache[0][dataIndex + (1024 * k)] == dataTag) {
+							instructionCache[1][dataIndex + (1024 * k)] = 0;
+							for (i = 0; i < associativity; i++) {
+								if (i != k) {
+									if (instructionCache[1][dataIndex + (1024 * i)] != (associativity - 1))
+										instructionCache[1][dataIndex + (1024 * i)]++;
+								}
+							}
+							instructionHit++;
 							flag = 1;
 							break;
 						}
 					}
 					if (flag != 1) {
 						for (i = 0; i < associativity; i++) {
-							if (combinedCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
-								combinedCache[0][dataIndex + (1024 * i)] = dataTag;
-								combinedCache[1][dataIndex + (1024 * i)] = 0;
+							if (instructionCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
+								instructionCache[0][dataIndex + (1024 * i)] = dataTag;
+								instructionCache[1][dataIndex + (1024 * i)] = 0;
 								for (k = 0; k < associativity; k++) {
 									if (k != i) {
-										if (combinedCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
-											combinedCache[1][dataIndex + (1024 * k)]++;
+										if (instructionCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
+											instructionCache[1][dataIndex + (1024 * k)]++;
 										}
 									}
 								}
@@ -300,132 +389,51 @@ int main()
 							}
 						}
 					}
+				}
+				if (dOrI == 1 || dOrI == 0) {
+					dataFetches++;
+					flag = 0;
+					for (k = 0; k < associativity; k++) {
+						if (dataCache[0][dataIndex + (1024 * k)] == dataTag) {
+							dataCache[1][dataIndex + (1024 * k)] = 0;
+							for (i = 0; i < associativity; i++) {
+								if (i != k) {
+									if (dataCache[1][dataIndex + (1024 * i)] != (associativity - 1))
+										dataCache[1][dataIndex + (1024 * i)]++;
+								}
+							}
+							dataHit++;
+							flag = 1;
+							break;
+						}
+					}
+					if (flag != 1) {
+						for (i = 0; i < associativity; i++) {
+							if (dataCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
+								dataCache[0][dataIndex + (1024 * i)] = dataTag;
+								dataCache[1][dataIndex + (1024 * i)] = 0;
+								for (k = 0; k < associativity; k++) {
+									if (k != i) {
+										if (dataCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
+											dataCache[1][dataIndex + (1024 * k)]++;
+										}
+									}
+								}
+								break;
+							}
+						}
+					}
+
 				}
 			}
-			cout << "\nCombined Fetches = " << combinedFetches << "\tCombined Hits = " << combinedHit << "\t\tCombined Misses = " << (combinedFetches - combinedHit) << endl;
-			cout << "\nCombined Hit Rate = " << (((float)combinedHit) * 100) / ((float)combinedFetches) << "%" << "\tInstruction Miss Rate = " << 100.0 - (((float)combinedHit) * 100) / ((float)combinedFetches) << "%" << endl;
 		}
-
-// If Split Cache is selected
-		if (sOrC == 1) {
-			while (getline(in, line)) {
-				dOrI = convertTypeToNumber(line);
-				data = convertDataToNumber(line);
-
-				dataOffset = data & offsetTemp;
-				dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
-				dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
-
-				//cout<<"\ndataTag = "<<dataTag<<"\tdataIndex = "<<dataIndex<<"\tdataOffset = "<<dataOffset<<endl;
-				if (associativity == 1) {
-					if (dOrI == 2) {
-						instructionFetches++;
-						if (instructionCache[0][dataIndex] == dataTag) {
-							instructionHit++;
-						}
-						else {
-							instructionCache[0][dataIndex] = dataTag;
-						}
-					}
-					if (dOrI == 1) {
-						dataFetches++;
-						if (dataCache[0][dataIndex] == dataTag) {
-							dataHit++;
-						}
-						else {
-							dataCache[0][dataIndex] = dataTag;
-						}
-					}
-					if (dOrI == 0) {
-						dataFetches++;
-						if (dataCache[0][dataIndex] == dataTag) {
-							dataHit++;
-						}
-						else {
-							dataCache[0][dataIndex] = dataTag;
-						}
-					}
-				}
-
-				if (associativity == 4) {
-					if (dOrI == 2) {
-						instructionFetches++;
-						flag = 0;
-						for (k = 0; k < associativity; k++) {
-							if (instructionCache[0][dataIndex + (1024 * k)] == dataTag) {
-								instructionCache[1][dataIndex + (1024 * k)] = 0;
-								for (i = 0; i < associativity; i++) {
-									if (i != k) {
-										if (instructionCache[1][dataIndex + (1024 * i)] != (associativity - 1))
-											instructionCache[1][dataIndex + (1024 * i)]++;
-									}
-								}
-								instructionHit++;
-								flag = 1;
-								break;
-							}
-						}
-						if (flag != 1) {
-							for (i = 0; i < associativity; i++) {
-								if (instructionCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
-									instructionCache[0][dataIndex + (1024 * i)] = dataTag;
-									instructionCache[1][dataIndex + (1024 * i)] = 0;
-									for (k = 0; k < associativity; k++) {
-										if (k != i) {
-											if (instructionCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
-												instructionCache[1][dataIndex + (1024 * k)]++;
-											}
-										}
-									}
-									break;
-								}
-							}
-						}
-					}
-					if (dOrI == 1 || dOrI == 0) {
-						dataFetches++;
-						flag = 0;
-						for (k = 0; k < associativity; k++) {
-							if (dataCache[0][dataIndex + (1024 * k)] == dataTag) {
-								dataCache[1][dataIndex + (1024 * k)] = 0;
-								for (i = 0; i < associativity; i++) {
-									if (i != k) {
-										if (dataCache[1][dataIndex + (1024 * i)] != (associativity - 1))
-											dataCache[1][dataIndex + (1024 * i)]++;
-									}
-								}
-								dataHit++;
-								flag = 1;
-								break;
-							}
-						}
-						if (flag != 1) {
-							for (i = 0; i < associativity; i++) {
-								if (dataCache[1][dataIndex + (1024 * i)] == (associativity - 1)) {
-									dataCache[0][dataIndex + (1024 * i)] = dataTag;
-									dataCache[1][dataIndex + (1024 * i)] = 0;
-									for (k = 0; k < associativity; k++) {
-										if (k != i) {
-											if (dataCache[1][dataIndex + (1024 * k)] != (associativity - 1)) {
-												dataCache[1][dataIndex + (1024 * k)]++;
-											}
-										}
-									}
-									break;
-								}
-							}
-						}
-
-					}
-				}
-			}
-			cout << "\nInstruction Fetches = " << instructionFetches << "\tInstruction Hits = " << instructionHit << "\tInstruction Misses = " << (instructionFetches - instructionHit) << endl;
-			cout << "Data Fetches = " << dataFetches << "\t\tData Hits = " << dataHit << "\t\tData Misses = " << (dataFetches - dataHit) << endl;
-			cout << "\nInstruction Hit Rate = " << (((float)instructionHit) * 100) / ((float)instructionFetches) << "%" << "\t\tInstruction Miss Rate = " << 100.0 - ((((float)instructionHit) * 100) / ((float)instructionFetches)) << "%" << endl;
-			cout << "Data Hit Rate = " << (((float)dataHit) * 100) / ((float)dataFetches) << "%" << "\t\tData Miss Rate = " << 100.0 - ((((float)dataHit) * 100) / ((float)dataFetches)) << "%" << endl;
-		}
-		count++;
+		cout << "\nInstruction Fetches = " << instructionFetches << "\tInstruction Hits = " << instructionHit << "\tInstruction Misses = " << (instructionFetches - instructionHit) << endl;
+		cout << "Data Fetches = " << dataFetches << "\t\tData Hits = " << dataHit << "\t\tData Misses = " << (dataFetches - dataHit) << endl;
+		cout << "\nInstruction Hit Rate = " << (((float)instructionHit) * 100) / ((float)instructionFetches) << "%" << "\t\tInstruction Miss Rate = " << 100.0 - ((((float)instructionHit) * 100) / ((float)instructionFetches)) << "%" << endl;
+		cout << "Data Hit Rate = " << (((float)dataHit) * 100) / ((float)dataFetches) << "%" << "\t\tData Miss Rate = " << 100.0 - ((((float)dataHit) * 100) / ((float)dataFetches)) << "%" << endl;
 	}
+	//count++;
+	//}
 	cout << "###########################################################################################" << endl;
 	return 0;
 }
