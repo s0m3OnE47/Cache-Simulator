@@ -70,9 +70,9 @@ public:
 		blockSize = blockSizeL;
 		associativity = associativityL;
 
-		combinedCache.resize(2,vector<int>(cacheSize / blockSize));
-		instructionCache.resize(2,vector<int>(cacheSize / blockSize));
-		dataCache.resize(2,vector<int>(cacheSize / blockSize));
+		combinedCache.resize(2, vector<int>(cacheSize / blockSize));
+		instructionCache.resize(2, vector<int>(cacheSize / blockSize));
+		dataCache.resize(2, vector<int>(cacheSize / blockSize));
 
 
 		offsetLength = (int)(log2(blockSize));
@@ -92,19 +92,65 @@ public:
 		}
 	}
 
-	int getOffsetLength(){
+	int getOffsetLength() {
 		return offsetLength;
 	}
 
-	int getIndexLength(){
+	int getIndexLength() {
 		return indexLength;
 	}
 
-	int getTagLength(){
+	int getTagLength() {
 		return tagLength;
 	}
 
-	void updateCache(int dataOrInstruction, int data) {
+	void checkIfCacheHit(int data, int dataOrInstruction) {
+		offsetTemp = (1 << offsetLength) - 1;
+		indexTemp = (1 << indexLength) - 1;
+		tagTemp = (1 << tagLength) - 1;
+
+		dataOffset = data & offsetTemp;
+		dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
+		dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
+
+		if (splitOrCombined == 2) {
+			combinedFetches++;
+			for (k = 0; k < associativity; k++) {
+				if (combinedCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] == dataTag) {
+					combinedHit++;
+					break;
+				}
+			}
+		}
+
+
+		// If Split Cache is selected
+		if (splitOrCombined == 1) {
+			if (dataOrInstruction == 2) {
+				instructionFetches++;
+				for (k = 0; k < associativity; k++) {
+					if (instructionCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] == dataTag) {
+						instructionHit++;
+						break;
+					}
+				}
+			}
+
+			if (dataOrInstruction == 1 || dataOrInstruction == 0) {
+				dataFetches++;
+				for (k = 0; k < associativity; k++) {
+					if (dataCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] == dataTag) {
+						dataHit++;
+						break;
+					}
+				}
+			}
+		}
+
+	}
+
+	void updateCache(int data, int dataOrInstruction, int &L1ToL2Data, int &L1ToL2DOrI) {
+		L1ToL2DOrI = dataOrInstruction;
 
 		offsetTemp = (1 << offsetLength) - 1;
 		indexTemp = (1 << indexLength) - 1;
@@ -114,10 +160,7 @@ public:
 		dataIndex = (data & (indexTemp << offsetLength)) >> (offsetLength);
 		dataTag = (data & (tagTemp << (indexLength + offsetLength))) >> ((indexLength + offsetLength));
 
-
 		if (splitOrCombined == 2) {
-			//cout << "\ndataTag = " << dataTag << "\tdataIndex = " << dataIndex << "\tdataOffset = " << dataOffset << endl;
-			combinedFetches++;
 			flag = 0;
 			for (k = 0; k < associativity; k++) {
 				if (combinedCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] == dataTag) {
@@ -128,7 +171,6 @@ public:
 								combinedCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)]++;
 						}
 					}
-					combinedHit++;
 					flag = 1;
 					break;
 				}
@@ -136,6 +178,7 @@ public:
 			if (flag != 1) {
 				for (i = 0; i < associativity; i++) {
 					if (combinedCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] == (associativity - 1)) {
+						L1ToL2Data = data;
 						combinedCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] = dataTag;
 						combinedCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] = 0;
 						for (k = 0; k < associativity; k++) {
@@ -151,12 +194,10 @@ public:
 			}
 		}
 
-
-		// If Split Cache is selected
+// If Split Cache is selected
 		if (splitOrCombined == 1) {
 			if (dataOrInstruction == 2) {
 				flag = 0;
-				instructionFetches++;
 				for (k = 0; k < associativity; k++) {
 					if (instructionCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] == dataTag) {
 						instructionCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] = 0;
@@ -166,7 +207,6 @@ public:
 									instructionCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)]++;
 							}
 						}
-						instructionHit++;
 						flag = 1;
 						break;
 					}
@@ -174,6 +214,7 @@ public:
 				if (flag != 1) {
 					for (i = 0; i < associativity; i++) {
 						if (instructionCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] == (associativity - 1)) {
+							L1ToL2Data = data;
 							instructionCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] = dataTag;
 							instructionCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] = 0;
 							for (k = 0; k < associativity; k++) {
@@ -191,7 +232,6 @@ public:
 
 			if (dataOrInstruction == 1 || dataOrInstruction == 0) {
 				flag = 0;
-				dataFetches++;
 				for (k = 0; k < associativity; k++) {
 					if (dataCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] == dataTag) {
 						dataCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * k)] = 0;
@@ -201,7 +241,6 @@ public:
 									dataCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)]++;
 							}
 						}
-						dataHit++;
 						flag = 1;
 						break;
 					}
@@ -209,6 +248,7 @@ public:
 				if (flag != 1) {
 					for (i = 0; i < associativity; i++) {
 						if (dataCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] == (associativity - 1)) {
+							L1ToL2Data = data;
 							dataCache[0][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] = dataTag;
 							dataCache[1][dataIndex + ((cacheSize / (blockSize * associativity)) * i)] = 0;
 							for (k = 0; k < associativity; k++) {
@@ -227,6 +267,7 @@ public:
 
 
 	}
+
 };
 
 
@@ -242,9 +283,11 @@ int main(int argc, char *argv[])
 	//4096 is worst case. Cache_Size/Block_Size = Array_Length. 32768/8 = 4096;
 	string line;
 	int i;
-	int data, dataOrInstruction;
+	int data, dataOrInstruction, L1ToL2Data = 0, L1ToL2DOrI = 0;
+	int prevHitsL1 = 0, prevHitsL2 = 0;
 	Cache L1(splitOrCombinedL1, cacheSizeL1, blockSizeL1, associativityL1);
 	Cache L2(splitOrCombinedL2, cacheSizeL2, blockSizeL2, associativityL2);
+	long long int cycles = 0;
 
 	ifstream in(fileName);
 	if (!in) {
@@ -267,24 +310,128 @@ int main(int argc, char *argv[])
 		dataOrInstruction = convertTypeToNumber(line);
 		data = convertDataToNumber(line);
 
-		L1.updateCache(dataOrInstruction, data);
+		L1.checkIfCacheHit(data, dataOrInstruction);
+		cycles += 10;
 
+
+
+		if (splitOrCombinedL1 == 1) {
+			// If L1 miss
+			if (prevHitsL1 == L1.instructionHit + L1.dataHit) {
+				L2.checkIfCacheHit(data, dataOrInstruction);
+				cycles += 100;
+				if (splitOrCombinedL2 == 2) {
+					// L2 miss
+					if (prevHitsL2 == L2.combinedHit) {
+						cycles += 1000;
+					}
+
+					// L2 Hit
+					else {
+						prevHitsL2 = L2.combinedHit;
+					}
+					L1.updateCache(data, dataOrInstruction, L1ToL2Data, L1ToL2DOrI);
+					L2.updateCache(L1ToL2Data, L1ToL2DOrI, L1ToL2Data, L1ToL2DOrI);
+				}
+				if (splitOrCombinedL2 == 1) {
+					// L2 miss
+					if (prevHitsL2 == L2.instructionHit + L2.dataHit) {
+						cycles += 1000;
+					}
+
+					// L2 Hit
+					else {
+						prevHitsL2 = L2.instructionHit + L2.dataHit;
+					}
+					L1.updateCache(data, dataOrInstruction, L1ToL2Data, L1ToL2DOrI);
+					L2.updateCache(L1ToL2Data, L1ToL2DOrI, L1ToL2Data, L1ToL2DOrI);
+				}
+			}
+
+			// If L1 Hit
+			else {
+				prevHitsL1 = L1.instructionHit + L1.dataHit;
+				L1.updateCache(data, dataOrInstruction, L1ToL2Data, L1ToL2DOrI);
+			}
+		}
+
+
+
+
+		if (splitOrCombinedL1 == 2) {
+			// If L1 miss
+			if (prevHitsL1 == L1.combinedHit) {
+				L2.checkIfCacheHit(data, dataOrInstruction);
+				cycles += 100;
+				if (splitOrCombinedL2 == 2) {
+					// L2 miss
+					if (prevHitsL2 == L2.combinedHit) {
+						cycles += 1000;
+					}
+
+					// L2 Hit
+					else {
+						prevHitsL2 = L2.combinedHit;
+					}
+					L1.updateCache(data, dataOrInstruction, L1ToL2Data, L1ToL2DOrI);
+					L2.updateCache(L1ToL2Data, L1ToL2DOrI, L1ToL2Data, L1ToL2DOrI);
+				}
+				if (splitOrCombinedL2 == 1) {
+					// L2 miss
+					if (prevHitsL2 == L2.instructionHit + L2.dataHit) {
+						cycles += 1000;
+					}
+
+					// L2 Hit
+					else {
+						prevHitsL2 = L2.instructionHit + L2.dataHit;
+					}
+					L1.updateCache(data, dataOrInstruction, L1ToL2Data, L1ToL2DOrI);
+					L2.updateCache(L1ToL2Data, L1ToL2DOrI, L1ToL2Data, L1ToL2DOrI);
+				}
+			}
+
+			// If L1 Hit
+			else {
+				prevHitsL1 = L1.combinedHit;
+				L1.updateCache(data, dataOrInstruction, L1ToL2Data, L1ToL2DOrI);
+			}
+		}
+
+		L1ToL2Data = 0;
 
 	}
 
 	if (splitOrCombinedL1 == 1 ) {
+		cout << "\n-----------------------L1---------------------" << endl;
 		cout << "\nInstruction Fetches = " << L1.instructionFetches << "\tInstruction Hits = " << L1.instructionHit << "\tInstruction Misses = " << (L1.instructionFetches - L1.instructionHit) << endl;
 		cout << "Data Fetches = " << L1.dataFetches << "\t\tData Hits = " << L1.dataHit << "\t\tData Misses = " << (L1.dataFetches - L1.dataHit) << endl;
 		cout << "\nInstruction Hit Rate = " << (((float)L1.instructionHit) * 100) / ((float)L1.instructionFetches) << "%" << "\t\tInstruction Miss Rate = " << 100.0 - ((((float)L1.instructionHit) * 100) / ((float)L1.instructionFetches)) << "%" << endl;
 		cout << "Data Hit Rate = " << (((float)L1.dataHit) * 100) / ((float)L1.dataFetches) << "%" << "\t\tData Miss Rate = " << 100.0 - ((((float)L1.dataHit) * 100) / ((float)L1.dataFetches)) << "%" << endl;
-
+	}
+	if (splitOrCombinedL2 == 1 ) {
+		cout << "\n-----------------------L2---------------------" << endl;
+		cout << "\nInstruction Fetches = " << L2.instructionFetches << "\tInstruction Hits = " << L2.instructionHit << "\tInstruction Misses = " << (L2.instructionFetches - L2.instructionHit) << endl;
+		cout << "Data Fetches = " << L2.dataFetches << "\t\tData Hits = " << L2.dataHit << "\t\tData Misses = " << (L2.dataFetches - L2.dataHit) << endl;
+		cout << "\nInstruction Hit Rate = " << (((float)L2.instructionHit) * 100) / ((float)L2.instructionFetches) << "%" << "\t\tInstruction Miss Rate = " << 100.0 - ((((float)L2.instructionHit) * 100) / ((float)L2.instructionFetches)) << "%" << endl;
+		cout << "Data Hit Rate = " << (((float)L2.dataHit) * 100) / ((float)L2.dataFetches) << "%" << "\t\tData Miss Rate = " << 100.0 - ((((float)L2.dataHit) * 100) / ((float)L2.dataFetches)) << "%" << endl;
 	}
 
 	if (splitOrCombinedL1 == 2 ) {
+		cout << "\n-----------------------L1---------------------" << endl;
 		cout << "\nCombined Fetches = " << L1.combinedFetches << "\tCombined Hits = " << L1.combinedHit << "\t\tCombined Misses = " << (L1.combinedFetches - L1.combinedHit) << endl;
 		cout << "\nCombined Hit Rate = " << (((float)L1.combinedHit) * 100) / ((float)L1.combinedFetches) << "%" << "\tCombined Miss Rate = " << 100.0 - (((float)L1.combinedHit) * 100) / ((float)L1.combinedFetches) << "%" << endl;
 	}
-
+	if (splitOrCombinedL2 == 2 ) {
+		cout << "\n-----------------------L2---------------------" << endl;
+		cout << "\nCombined Fetches = " << L2.combinedFetches << "\tCombined Hits = " << L2.combinedHit << "\t\tCombined Misses = " << (L2.combinedFetches - L2.combinedHit) << endl;
+		cout << "\nCombined Hit Rate = " << (((float)L2.combinedHit) * 100) / ((float)L2.combinedFetches) << "%" << "\tCombined Miss Rate = " << 100.0 - (((float)L2.combinedHit) * 100) / ((float)L2.combinedFetches) << "%" << endl;
+	}
+	cout << "cycle = " << cycles << endl;
 	cout << "###########################################################################################" << endl;
 	return 0;
 }
+
+/*
+./dineroIV -l1-isize 65536 -l1-dsize 65536 -l1-ibsize 64 -l1-dbsize 64 -l1-iassoc 8 -l1-dassoc 8 -l1-ifetch l -l1-dfetch l -l2-usize 524288 -l2-ubsize 64 -l2-uassoc 4 -l2-ufetch l -informat d<trace.din >capro
+ */
